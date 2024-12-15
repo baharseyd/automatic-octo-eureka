@@ -1,0 +1,516 @@
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+import keras
+     
+
+import csv
+def read_csv(filename):
+    phrase = []
+    emoji = []
+
+    with open (filename) as csvDataFile:
+        csvReader = csv.reader(csvDataFile)
+
+        for row in csvReader:
+            phrase.append(row[0])
+            emoji.append(row[1])
+
+    X = np.asarray(phrase)
+    Y = np.asarray(emoji, dtype=int)
+
+    return X, Y
+     
+
+from google.colab import files
+uploaded = files.upload()
+     
+Upload widget is only available when the cell has been executed in the current browser session. Please rerun this cell to enable.
+Saving train_emoji.csv to train_emoji (2).csv
+
+X_train, Y_train = read_csv('train_emoji.csv')
+
+     
+
+uploaded = files.upload()
+     
+Upload widget is only available when the cell has been executed in the current browser session. Please rerun this cell to enable.
+Saving test_emoji.csv to test_emoji (2).csv
+
+X_test, Y_test = read_csv('test_emoji.csv')
+     
+
+maxLen = len(max(X_train, key=len).split())
+maxLen
+     
+10
+
+!pip install emoji
+     
+Requirement already satisfied: emoji in /usr/local/lib/python3.10/dist-packages (1.6.3)
+
+import emoji
+
+     
+
+
+emoji_dictionary = {"0": "\u2764\uFE0F",    # :heart: prints a black instead of red heart depending on the font
+                    "1": ":baseball:",
+                    "2": ":smile:",
+                    "3": ":disappointed:",
+                    "4": ":fork_and_knife:"}
+
+def label_to_emoji(label):
+
+  return emoji.emojize(emoji_dictionary[str(label)], use_aliases=True)
+  #language='alias'
+     
+
+!pip install --upgrade emoji==1.6.3
+     
+Requirement already satisfied: emoji==1.6.3 in /usr/local/lib/python3.10/dist-packages (1.6.3)
+
+
+index = 5
+print(X_train[index], label_to_emoji(Y_train[index]))
+     
+I love you mum ❤️
+
+Y_oh_train =  keras.utils.to_categor)ical(Y_train,  5
+Y_oh_test =  keras.utils.to_categorical(Y_test, 5)
+     
+
+index = 50
+print(Y_train[index], "is converted into one hot", Y_oh_train[index])
+     
+0 is converted into one hot [1. 0. 0. 0. 0.]
+
+def read_glove_vecs(glove_file):
+    with open(glove_file, encoding="utf8") as f:
+        words = set()
+        word_to_vec_map = {}
+        for line in f:
+            line = line.strip().split()
+            curr_word = line[0]
+            words.add(curr_word)
+            word_to_vec_map[curr_word] = np.array(line[1:], dtype=np.float64)
+        i = 1
+        words_to_index = {}
+        index_to_words = {}
+        for w in sorted(words):
+            words_to_index[w] = i
+            index_to_words[i] = w
+            i = i + 1
+    return words_to_index, index_to_words, word_to_vec_map
+     
+
+uploaded = files.upload()
+     
+Upload widget is only available when the cell has been executed in the current browser session. Please rerun this cell to enable.
+Saving glove.6B.50d.txt to glove.6B.50d.txt
+
+word_to_index, index_to_word, word_to_vec_map = read_glove_vecs('glove.6B.50d.txt')
+
+     
+
+word = "fatemeh"
+index = 110011
+print("the index of", word, "in the vocabulary is", word_to_index[word])
+print("the", str(index) + "th word in the vocabulary is", index_to_word[index])
+     
+the index of fatemeh in the vocabulary is 145572
+the 110011th word in the vocabulary is cotherstone
+
+word_to_vec_map["fatemeh"]
+     
+array([-0.28103 ,  0.70142 ,  0.95715 , -0.67746 ,  0.04095 ,  2.1452  ,
+        1.0724  , -0.24133 ,  0.078944, -0.3879  ,  0.073104, -0.55003 ,
+       -0.072175,  0.1631  ,  0.011715,  0.45821 , -0.73487 ,  0.4834  ,
+        1.9277  ,  0.50251 , -0.087143,  0.37257 ,  0.30312 ,  0.72518 ,
+        0.72432 , -0.072846,  0.58899 ,  0.50311 , -1.4962  ,  0.2182  ,
+       -1.6104  ,  0.75147 ,  0.2672  ,  0.75233 ,  0.12278 , -0.11149 ,
+        0.56118 ,  0.57943 , -0.03375 ,  0.15395 ,  0.18753 ,  0.22272 ,
+       -0.40814 , -0.020224,  0.2712  , -0.85248 , -0.26494 ,  0.46335 ,
+        1.0987  , -0.45224 ])
+
+def sentence_to_avg(sentence, word_to_vec_map):
+    words = sentence.lower().split()
+    avg = np.zeros((50,))
+    for w in words:
+        avg += word_to_vec_map[w]
+    avg = avg / len(words)
+    return avg
+     
+
+avg = sentence_to_avg("Morrocan couscous is my favorite dish", word_to_vec_map)
+print("avg = ", avg)
+     
+avg =  [-0.008005    0.56370833 -0.50427333  0.258865    0.55131103  0.03104983
+ -0.21013718  0.16893933 -0.09590267  0.141784   -0.15708967  0.18525867
+  0.6495785   0.38371117  0.21102167  0.11301667  0.02613967  0.26037767
+  0.05820667 -0.01578167 -0.12078833 -0.02471267  0.4128455   0.5152061
+  0.38756167 -0.898661   -0.535145    0.33501167  0.68806933 -0.2156265
+  1.797155    0.10476933 -0.36775333  0.750785    0.10282583  0.348925
+ -0.27262833  0.66768    -0.10706167 -0.283635    0.59580117  0.28747333
+ -0.3366635   0.23393817  0.34349183  0.178405    0.1166155  -0.076433
+  0.1445417   0.09808667]
+
+def softmax(x):
+    e_x = np.exp(x - np.max(x))
+    return e_x / e_x.sum()
+def predict(X, Y, W, b, word_to_vec_map):
+    m = X.shape[0]
+    pred = np.zeros((m, 1))
+    for j in range(m):
+        words = X[j].lower().split()
+        # Average words' vectors
+        avg = np.zeros((50,))
+        for w in words:
+            avg += word_to_vec_map[w]
+        avg = avg/len(words)
+        # Forward propagation
+        Z = np.dot(W, avg) + b
+        A = softmax(Z)
+        pred[j] = np.argmax(A)
+    print("Accuracy: "  + str(np.mean((pred[:] == Y.reshape(Y.shape[0],1)[:]))))
+    return pred
+
+def model(X, Y, word_to_vec_map, learning_rate = 0.01, num_iterations = 401):
+    np.random.seed(1)
+    m = Y.shape[0]                          # number of training examples
+    n_y = 5                                 # number of classes
+    n_h = 50                                # dimensions of the GloVe vectors
+    W = np.random.randn(n_y, n_h) / np.sqrt(n_h)
+    b = np.zeros((n_y,))
+    Y_oh = keras.utils.to_categorical(Y, n_y)
+    for t in range(num_iterations):                       # Loop over the number of iterations
+        for i in range(m):                                # Loop over the training examples
+
+            # Average the word vectors of the words from the i'th training example
+            avg = sentence_to_avg(X[i], word_to_vec_map)
+            # Forward propagate the avg through the softmax layer
+            z = np.dot(W, avg) + b
+            a = softmax(z)
+            # Compute cost using the i'th training label's one hot representation and "A" (the output of the softmax)
+            cost = -np.sum(Y_oh[i] * np.log(a))
+            # Compute gradients
+            dz = a - Y_oh[i]
+            dW = np.dot(dz.reshape(n_y,1), avg.reshape(1, n_h))
+            db = dz
+
+            # Update parameters with Stochastic Gradient Descent
+            W = W - learning_rate * dW
+            b = b - learning_rate * db
+
+        if t % 100 == 0:
+            print("Epoch: " + str(t) + " --- cost = " + str(cost))
+            pred = predict(X, Y, W, b, word_to_vec_map)
+    return pred, W, b
+     
+
+pred, W, b = model(X_train, Y_train, word_to_vec_map)
+
+     
+Epoch: 0 --- cost = 1.952049881281007
+Accuracy: 0.3484848484848485
+Epoch: 100 --- cost = 0.07971818726014807
+Accuracy: 0.9318181818181818
+Epoch: 200 --- cost = 0.04456369243681402
+Accuracy: 0.9545454545454546
+Epoch: 300 --- cost = 0.03432267378786058
+Accuracy: 0.9696969696969697
+Epoch: 400 --- cost = 0.02906976783312465
+Accuracy: 0.9772727272727273
+
+print("Training set:")
+pred_train = predict(X_train, Y_train, W, b, word_to_vec_map)
+print('Test set:')
+pred_test = predict(X_test, Y_test, W, b, word_to_vec_map)
+     
+Training set:
+Accuracy: 0.9772727272727273
+Test set:
+Accuracy: 0.625
+
+def print_predictions(X, pred):
+    print()
+    for i in range(X.shape[0]):
+        print(X[i], label_to_emoji(int(pred[i])))
+     
+
+X_my_sentences = np.array(["i adore you", "i love you", "funny lol", "lets play with a ball", "food is ready", "not feeling happy"])
+Y_my_labels = np.array([[0], [0], [2], [1], [4],[3]])
+
+pred = predict(X_my_sentences, Y_my_labels , W, b, word_to_vec_map)
+print_predictions(X_my_sentences, pred)
+     
+Accuracy: 0.8333333333333334
+
+i adore you ❤️
+i love you ❤️
+funny lol 😄
+lets play with a ball ⚾
+food is ready 🍴
+not feeling happy 😄
+<ipython-input-25-9d81f9387e30>:4: DeprecationWarning: Conversion of an array with ndim > 0 to a scalar is deprecated, and will error in future. Ensure you extract a single element from your array before performing this operation. (Deprecated NumPy 1.25.)
+  print(X[i], label_to_emoji(int(pred[i])))
+
+import numpy as np
+np.random.seed(0)
+from keras.models import Model
+from keras.layers import Dense, Input, Dropout, LSTM, Activation
+#from keras.layers.embeddings import Embedding
+from keras.preprocessing import sequence
+from keras.initializers import glorot_uniform
+np.random.seed(1)
+     
+
+def sentences_to_indices(X, word_to_index, max_len):
+    m = X.shape[0]                                   # number of training examples
+    # Initialize X_indices as a numpy matrix of zeros and the correct shape (≈ 1 line)
+    X_indices = np.zeros((m, max_len))
+    for i in range(m):                               # loop over training examples
+        # Convert the ith training sentence in lower case and split is into words. You should get a list of words.
+        sentence_words =X[i].lower().split()
+        # Loop over the words of sentence_words
+        for j, w in enumerate(sentence_words):
+            # Set the (i,j)th entry of X_indices to the index of the correct word.
+            X_indices[i, j] = word_to_index[w]
+    return X_indices
+     
+
+X1 = np.array(["funny lol", "lets play baseball", "food is ready for you"])
+X1_indices = sentences_to_indices(X1,word_to_index, max_len = 5)
+print("X1 =", X1)
+print("X1_indices =", X1_indices)
+     
+X1 = ['funny lol' 'lets play baseball' 'food is ready for you']
+X1_indices = [[155345. 225122.      0.      0.      0.]
+ [220930. 286375.  69714.      0.      0.]
+ [151204. 192973. 302254. 151349. 394475.]]
+
+from keras.layers import Embedding
+def pretrained_embedding_layer(word_to_vec_map, word_to_index):
+    vocab_len = len(word_to_index) + 1
+    emb_dim = word_to_vec_map["cucumber"].shape[0]
+    emb_matrix = np.zeros((vocab_len, emb_dim))
+    for word, index in word_to_index.items():
+        emb_matrix[index, :] = word_to_vec_map[word]
+    embedding_layer = Embedding(vocab_len, emb_dim, trainable = False)
+    embedding_layer.build((None,))
+    embedding_layer.set_weights([emb_matrix])
+    return embedding_layer
+     
+
+from keras.layers import Input
+from keras.layers import LSTM
+from keras.layers import Dense, Dropout
+from keras.models import Model
+
+def Emojify_V2(input_shape, word_to_vec_map, word_to_index):
+    sentence_indices = Input(input_shape, dtype = np.int32)
+    embedding_layer = pretrained_embedding_layer(word_to_vec_map, word_to_index)
+    embeddings = embedding_layer(sentence_indices)
+    X = LSTM(128, return_sequences=True)(embeddings)
+    X = Dropout(0.5)(X)
+    X = LSTM(128)(X)
+    X = Dropout(0.5)(X)
+    X = Dense(5, activation = 'softmax')(X)
+    model = Model(sentence_indices, X)
+    return model
+     
+
+model = Emojify_V2((maxLen,), word_to_vec_map, word_to_index)
+model.summary()
+     
+Model: "model"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ input_1 (InputLayer)        [(None, 10)]              0         
+                                                                 
+ embedding (Embedding)       (None, 10, 50)            20000050  
+                                                                 
+ lstm (LSTM)                 (None, 10, 128)           91648     
+                                                                 
+ dropout (Dropout)           (None, 10, 128)           0         
+                                                                 
+ lstm_1 (LSTM)               (None, 128)               131584    
+                                                                 
+ dropout_1 (Dropout)         (None, 128)               0         
+                                                                 
+ dense (Dense)               (None, 5)                 645       
+                                                                 
+=================================================================
+Total params: 20223927 (77.15 MB)
+Trainable params: 223877 (874.52 KB)
+Non-trainable params: 20000050 (76.29 MB)
+_________________________________________________________________
+
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+     
+
+X_train_indices = sentences_to_indices(X_train, word_to_index, maxLen)
+Y_train_oh = keras.utils.to_categorical(Y_train, 5)
+     
+
+model.fit(X_train_indices, Y_train_oh, epochs = 50, batch_size = 32, shuffle=True)
+
+     
+Epoch 1/50
+5/5 [==============================] - 6s 16ms/step - loss: 1.5968 - accuracy: 0.2652
+Epoch 2/50
+5/5 [==============================] - 0s 7ms/step - loss: 1.5005 - accuracy: 0.3030
+Epoch 3/50
+5/5 [==============================] - 0s 7ms/step - loss: 1.4649 - accuracy: 0.3409
+Epoch 4/50
+5/5 [==============================] - 0s 8ms/step - loss: 1.3911 - accuracy: 0.4848
+Epoch 5/50
+5/5 [==============================] - 0s 8ms/step - loss: 1.2764 - accuracy: 0.6212
+Epoch 6/50
+5/5 [==============================] - 0s 7ms/step - loss: 1.1365 - accuracy: 0.5833
+Epoch 7/50
+5/5 [==============================] - 0s 7ms/step - loss: 1.0371 - accuracy: 0.5909
+Epoch 8/50
+5/5 [==============================] - 0s 8ms/step - loss: 0.8725 - accuracy: 0.6591
+Epoch 9/50
+5/5 [==============================] - 0s 9ms/step - loss: 0.8454 - accuracy: 0.6591
+Epoch 10/50
+5/5 [==============================] - 0s 9ms/step - loss: 0.7202 - accuracy: 0.6818
+Epoch 11/50
+5/5 [==============================] - 0s 8ms/step - loss: 0.6708 - accuracy: 0.7500
+Epoch 12/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.6162 - accuracy: 0.7576
+Epoch 13/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.8601 - accuracy: 0.6591
+Epoch 14/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.4961 - accuracy: 0.8409
+Epoch 15/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.4765 - accuracy: 0.8182
+Epoch 16/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.4495 - accuracy: 0.8788
+Epoch 17/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.3787 - accuracy: 0.8788
+Epoch 18/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.3530 - accuracy: 0.8712
+Epoch 19/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.3137 - accuracy: 0.8939
+Epoch 20/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.2268 - accuracy: 0.9242
+Epoch 21/50
+5/5 [==============================] - 0s 8ms/step - loss: 0.2238 - accuracy: 0.9091
+Epoch 22/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.2539 - accuracy: 0.9091
+Epoch 23/50
+5/5 [==============================] - 0s 8ms/step - loss: 0.1893 - accuracy: 0.9470
+Epoch 24/50
+5/5 [==============================] - 0s 8ms/step - loss: 0.2254 - accuracy: 0.9015
+Epoch 25/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.2032 - accuracy: 0.9318
+Epoch 26/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.2125 - accuracy: 0.9394
+Epoch 27/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.1296 - accuracy: 0.9470
+Epoch 28/50
+5/5 [==============================] - 0s 10ms/step - loss: 0.1272 - accuracy: 0.9470
+Epoch 29/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.1000 - accuracy: 0.9773
+Epoch 30/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.0951 - accuracy: 0.9773
+Epoch 31/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.1077 - accuracy: 0.9773
+Epoch 32/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.0906 - accuracy: 0.9697
+Epoch 33/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.0664 - accuracy: 0.9773
+Epoch 34/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.3837 - accuracy: 0.9242
+Epoch 35/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.4920 - accuracy: 0.8864
+Epoch 36/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.8496 - accuracy: 0.7955
+Epoch 37/50
+5/5 [==============================] - 0s 8ms/step - loss: 0.4390 - accuracy: 0.8409
+Epoch 38/50
+5/5 [==============================] - 0s 8ms/step - loss: 0.3310 - accuracy: 0.9091
+Epoch 39/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.3147 - accuracy: 0.8939
+Epoch 40/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.2953 - accuracy: 0.9015
+Epoch 41/50
+5/5 [==============================] - 0s 8ms/step - loss: 0.2288 - accuracy: 0.9167
+Epoch 42/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.1929 - accuracy: 0.9545
+Epoch 43/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.1396 - accuracy: 0.9621
+Epoch 44/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.1445 - accuracy: 0.9697
+Epoch 45/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.1601 - accuracy: 0.9470
+Epoch 46/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.1029 - accuracy: 0.9848
+Epoch 47/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.0904 - accuracy: 0.9848
+Epoch 48/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.0737 - accuracy: 0.9848
+Epoch 49/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.0618 - accuracy: 0.9848
+Epoch 50/50
+5/5 [==============================] - 0s 7ms/step - loss: 0.0467 - accuracy: 0.9924
+<keras.src.callbacks.History at 0x7a293433ce80>
+
+
+X_test_indices = sentences_to_indices(X_test, word_to_index, max_len = maxLen)
+Y_test_oh = keras.utils.to_categorical(Y_test, 5)
+loss, acc = model.evaluate(X_test_indices, Y_test_oh)
+print()
+print("Test accuracy = ", acc)
+     
+2/2 [==============================] - 1s 9ms/step - loss: 1.1644 - accuracy: 0.6607
+
+Test accuracy =  0.6607142686843872
+
+# This code allows you to see the mislabelled examples
+C = 5
+y_test_oh = np.eye(C)[Y_test.reshape(-1)]
+X_test_indices = sentences_to_indices(X_test, word_to_index, maxLen)
+pred = model.predict(X_test_indices)
+for i in range(len(X_test)):
+    x = X_test_indices
+    num = np.argmax(pred[i])
+    if(num != Y_test[i]):
+        print('Expected emoji:'+ label_to_emoji(Y_test[i]) + ' prediction: '+ X_test[i] + label_to_emoji(num).strip())
+     
+2/2 [==============================] - 1s 9ms/step
+Expected emoji:😄 prediction: he got a raise	😞
+Expected emoji:❤️ prediction: he is a good friend	😄
+Expected emoji:❤️ prediction: I am upset	😞
+Expected emoji:❤️ prediction: We had such a lovely dinner tonight	😄
+Expected emoji:😞 prediction: This girl is messing with me	❤️
+Expected emoji:😄 prediction: are you serious ha ha	😞
+Expected emoji:😄 prediction: you brighten my day	❤️
+Expected emoji:😞 prediction: she is a bully	❤️
+Expected emoji:😞 prediction: I worked during my birthday	😄
+Expected emoji:😄 prediction: enjoy your break	😞
+Expected emoji:❤️ prediction: valentine day is near	😄
+Expected emoji:😞 prediction: My life is so boring	❤️
+Expected emoji:🍴 prediction: I am starving	😞
+Expected emoji:😄 prediction: I like your jacket 	❤️
+Expected emoji:😄 prediction: I want to joke	😞
+Expected emoji:😞 prediction: go away	⚾
+Expected emoji:😞 prediction: yesterday we lost again	⚾
+Expected emoji:❤️ prediction: family is all I have	😞
+Expected emoji:😞 prediction: I did not have breakfast 🍴
+
+# Change the sentence below to see your prediction. Make sure all the words are in the Glove embeddings.
+x_test = np.array(['you are happy'])
+X_test_indices = sentences_to_indices(x_test, word_to_index, maxLen)
+print(x_test[0] +' '+  label_to_emoji(np.argmax(model.predict(X_test_indices))))
+     
+1/1 [==============================] - 0s 42ms/step
+you are happy ❤️
+
+
+     
